@@ -5,6 +5,45 @@ import { jsPDF } from 'jspdf'
 import html2canvas from 'html2canvas'
 import { PlusCircle, MinusCircle, Download } from 'lucide-react'
 
+type WorkExperience = {
+  company: string;
+  position: string;
+  duration: string;
+  responsibilities: string;
+};
+
+type Education = {
+  degree: string;
+  institution: string;
+  timeline: string;
+};
+
+type Project = {
+  title: string;
+  description: string;
+  techStack: string;
+  link: string;
+};
+
+type Certificate = {
+  name: string;
+  provider: string;
+  description: string;
+};
+
+type Award = {
+  name: string;
+  issuer: string;
+  details: string;
+};
+
+type Skills = {
+  programming: string;
+  webTech: string;
+  databases: string;
+  tools: string;
+};
+
 export function ResumeBuilder() {
   const [personalInfo, setPersonalInfo] = useState({
     name: '',
@@ -16,40 +55,40 @@ export function ResumeBuilder() {
 
   const [objective, setObjective] = useState('')
 
-  const [workExperience, setWorkExperience] = useState([{
+  const [workExperience, setWorkExperience] = useState<WorkExperience[]>([{
     company: '',
     position: '',
     duration: '',
     responsibilities: ''
   }])
 
-  const [education, setEducation] = useState([{
+  const [education, setEducation] = useState<Education[]>([{
     degree: '',
     institution: '',
     timeline: ''
   }])
 
-  const [skills, setSkills] = useState({
+  const [skills, setSkills] = useState<Skills>({
     programming: '',
     webTech: '',
     databases: '',
     tools: ''
   })
 
-  const [projects, setProjects] = useState([{
+  const [projects, setProjects] = useState<Project[]>([{
     title: '',
     description: '',
     techStack: '',
     link: ''
   }])
 
-  const [certificates, setCertificates] = useState([{
+  const [certificates, setCertificates] = useState<Certificate[]>([{
     name: '',
     provider: '',
     description: ''
   }])
 
-  const [awards, setAwards] = useState([{
+  const [awards, setAwards] = useState<Award[]>([{
     name: '',
     issuer: '',
     details: ''
@@ -58,55 +97,50 @@ export function ResumeBuilder() {
   const resumeRef = useRef(null)
 
   const handleDownload = async () => {
-  const element = resumeRef.current;
-  
-  // Ensure element is not null before passing it to html2canvas
-  if (!element) {
-    console.error('Resume element not found');
-    return;
+    const element = resumeRef.current;
+
+    if (!element) {
+      console.error('Resume element not found');
+      return;
+    }
+
+    const canvas = await html2canvas(element);
+    const data = canvas.toDataURL('image/png');
+
+    const pdf = new jsPDF();
+    const imgProperties = pdf.getImageProperties(data);
+    const pdfWidth = pdf.internal.pageSize.getWidth();
+    const pdfHeight = (imgProperties.height * pdfWidth) / imgProperties.width;
+
+    pdf.addImage(data, 'PNG', 0, 0, pdfWidth, pdfHeight);
+    pdf.save('resume.pdf');
+  };
+
+  // Add the section with specific types
+  const addSection = <T,>(section: string, setState: React.Dispatch<React.SetStateAction<T[]>>) => {
+    switch (section) {
+      case 'education':
+        setState(prev => [...prev, { degree: '', institution: '', timeline: '' } as unknown as T]);
+        break;
+      case 'workExperience':
+        setState(prev => [...prev, { company: '', position: '', duration: '', responsibilities: '' } as unknown as T]);
+        break;
+      case 'projects':
+        setState(prev => [...prev, { title: '', description: '', techStack: '', link: '' } as unknown as T]);
+        break;
+      case 'certificates':
+        setState(prev => [...prev, { name: '', provider: '', description: '' } as unknown as T]);
+        break;
+      case 'awards':
+        setState(prev => [...prev, { name: '', issuer: '', details: '' } as unknown as T]);
+        break;
+      default:
+        break;
+    }
   }
 
-  const canvas = await html2canvas(element);
-  const data = canvas.toDataURL('image/png');
-
-  const pdf = new jsPDF();
-  const imgProperties = pdf.getImageProperties(data);
-  const pdfWidth = pdf.internal.pageSize.getWidth();
-  const pdfHeight = (imgProperties.height * pdfWidth) / imgProperties.width;
-
-  pdf.addImage(data, 'PNG', 0, 0, pdfWidth, pdfHeight);
-  pdf.save('resume.pdf');
-};
-
-
-  const addSection = (section, setState) => {
-    setState(prev => [...prev, section === 'education' ? {
-      degree: '',
-      institution: '',
-      timeline: ''
-    } : section === 'workExperience' ? {
-      company: '',
-      position: '',
-      duration: '',
-      responsibilities: ''
-    } : section === 'projects' ? {
-      title: '',
-      description: '',
-      techStack: '',
-      link: ''
-    } : section === 'certificates' ? {
-      name: '',
-      provider: '',
-      description: ''
-    } : {
-      name: '',
-      issuer: '',
-      details: ''
-    }])
-  }
-
-  const removeSection = (section, index, setState) => {
-    setState(prev => prev.filter((_, i) => i !== index))
+  const removeSection = <T,>(index: number, setState: React.Dispatch<React.SetStateAction<T[]>>) => {
+    setState(prev => prev.filter((_, i) => i !== index));
   }
 
   return (
@@ -224,7 +258,7 @@ export function ResumeBuilder() {
                     />
                     <button
                       className="ml-4 text-red-600 hover:text-red-800"
-                      onClick={() => removeSection('workExperience', index, setWorkExperience)}
+                      onClick={() => removeSection(index, setWorkExperience)}
                     >
                       <MinusCircle className="w-5 h-5" />
                     </button>
@@ -282,7 +316,7 @@ export function ResumeBuilder() {
                     />
                     <button
                       className="ml-4 text-red-600 hover:text-red-800"
-                      onClick={() => removeSection('education', index, setEducation)}
+                      onClick={() => removeSection( index, setEducation)}
                     >
                       <MinusCircle className="w-5 h-5" />
                     </button>
@@ -382,7 +416,7 @@ export function ResumeBuilder() {
                     />
                     <button
                       className="ml-4 text-red-600 hover:text-red-800"
-                      onClick={() => removeSection('projects', index, setProjects)}
+                      onClick={() => removeSection(index, setProjects)}
                     >
                       <MinusCircle className="w-5 h-5" />
                     </button>
@@ -440,7 +474,7 @@ export function ResumeBuilder() {
                     />
                     <button
                       className="ml-4 text-red-600 hover:text-red-800"
-                      onClick={() => removeSection('certificates', index, setCertificates)}
+                      onClick={() => removeSection(index, setCertificates)}
                     >
                       <MinusCircle className="w-5 h-5" />
                     </button>
@@ -498,7 +532,7 @@ export function ResumeBuilder() {
                     />
                     <button
                       className="ml-4 text-red-600 hover:text-red-800"
-                      onClick={() => removeSection('awards', index, setAwards)}
+                      onClick={() => removeSection( index, setAwards)}
                     >
                       <MinusCircle className="w-5 h-5" />
                     </button>
