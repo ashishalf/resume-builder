@@ -58,18 +58,26 @@ export function ResumeBuilder() {
   const resumeRef = useRef(null)
 
   const handleDownload = async () => {
-    const element = resumeRef.current
-    const canvas = await html2canvas(element)
-    const data = canvas.toDataURL('image/png')
-
-    const pdf = new jsPDF()
-    const imgProperties = pdf.getImageProperties(data)
-    const pdfWidth = pdf.internal.pageSize.getWidth()
-    const pdfHeight = (imgProperties.height * pdfWidth) / imgProperties.width
-
-    pdf.addImage(data, 'PNG', 0, 0, pdfWidth, pdfHeight)
-    pdf.save('resume.pdf')
+  const element = resumeRef.current;
+  
+  // Ensure element is not null before passing it to html2canvas
+  if (!element) {
+    console.error('Resume element not found');
+    return;
   }
+
+  const canvas = await html2canvas(element);
+  const data = canvas.toDataURL('image/png');
+
+  const pdf = new jsPDF();
+  const imgProperties = pdf.getImageProperties(data);
+  const pdfWidth = pdf.internal.pageSize.getWidth();
+  const pdfHeight = (imgProperties.height * pdfWidth) / imgProperties.width;
+
+  pdf.addImage(data, 'PNG', 0, 0, pdfWidth, pdfHeight);
+  pdf.save('resume.pdf');
+};
+
 
   const addSection = (section, setState) => {
     setState(prev => [...prev, section === 'education' ? {
