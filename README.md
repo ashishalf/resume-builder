@@ -1,4 +1,4 @@
-# Resume Builder App  
+# Resume Builder App  by V0.dev
 
 A user-friendly web application built with Next.js to create professional resumes in minutes. Add your details, and download your resume instantly. Ideal for students, professionals, and career changers looking for an easy way to create a standout resume.  
 
